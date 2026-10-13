@@ -4,6 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +39,7 @@ public class MainMenu extends JFrame implements ActionListener{
             @Override
             public void actionPerformed(ActionEvent e) {
                 // TODO: Vymyslet obsah
+                loadPersons();
                 status.setText(personData.size() + " records loaded! You can now view the dataset!");
                 tableView.setEnabled(true);
                 dataView.setEnabled(true);
@@ -52,13 +56,30 @@ public class MainMenu extends JFrame implements ActionListener{
         this.add(dataView);
         this.pack();
     }
+    private void loadPersons(){
+        String dataPath = "data/persons.txt";
+        try {
+            personData = Files.readAllLines(Path.of(dataPath))
+                    .stream().map(line -> line.trim().split(";"))
+                    .map( parts -> new Person(
+                            parts[0],
+                            parts[1],
+                            Integer.parseInt(parts[2]),
+                            Integer.parseInt(parts[3]),
+                            parts[4]
+                    )).toList();
+
+        }catch (IOException e){
+            System.err.println(e.getMessage());
+        }
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == tableView)
             new TableMenu().setVisible(true);
         if(e.getSource() == dataView)
-            new CardMenu().setVisible(true);
+            new CardMenu(personData.size()-1).setVisible(true);
     }
 
     public static void main(String[] args) {
